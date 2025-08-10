@@ -40,8 +40,6 @@ RUN set -e -x \
   php81-pdo_pgsql \
   tzdata \
   wget \
-  && wget -O /tmp/cpanm https://cpanmin.us \
-  && perl /tmp/cpanm --sudo App::cpanminus \
   && wget -4 -q --no-check-certificate -O parser.zip $REPORT_PARSER_SOURCE \
   && wget -4 -q --no-check-certificate -O viewer.zip $REPORT_VIEWER_SOURCE \
   && unzip parser.zip && cp -av dmarcts-report-parser-master/* /usr/bin/ && rm -vf parser.zip && rm -rvf dmarcts-report-parser-master \
@@ -52,26 +50,32 @@ RUN set -e -x \
   && sed -i 's%.*root /var/www/html;%        root /var/www/viewer;%g' /etc/nginx/nginx.conf \
   && sed -i 's/.*index index.php index.html;/        index dmarcts-report-viewer.php;/g' /etc/nginx/nginx.conf \
   && sed -i 's%files = /etc/supervisor.d/\*.ini%files = /etc/supervisor/conf.d/*.conf%g' /etc/supervisord.conf \
-  && cpanm --notest \
-    IO::Socket::SSL \
-    CPAN \
-    CPAN::DistnameInfo \
-    File::MimeInfo \
-    IO::Compress::Gzip \
-    Getopt::Long \
-    Mail::IMAPClient \
-    Mail::Mbox::MessageParser \
-    MIME::Base64 \
-    MIME::Words \
-    MIME::Parser \
-    XML::Parser \
-    XML::Simple \
-    DBI \
-    DBD::mysql@4.052 \
-    DBD::Pg \
-    Socket \
-    Socket6 \
-    PerlIO::gzip \
+  && (echo y;echo o conf allow_installing_outdated_dists yes;echo o conf prerequisites_policy follow;echo o conf commit)|cpan \
+  && for i in \
+  IO::Socket::SSL \
+  CPAN \
+  CPAN::DistnameInfo \
+  File::MimeInfo \
+  IO::Compress::Gzip \
+  Getopt::Long \
+  Mail::IMAPClient \
+  Mail::Mbox::MessageParser \
+  MIME::Base64 \
+  MIME::Words \
+  MIME::Parser \
+  MIME::Parser::Filer \
+  XML::Parser \
+  XML::Simple \
+  DBI \
+  # XXX: pinning to a version, which does not suffer from mariadb 10 version comparison issues
+  # TODO: replace with DBD::mysql again, when issue is resolved
+  # https://forum.bestpractical.com/t/mysql-dependency-error-with-mariadb-and-debian-12/38748/2
+  DVEEDEN/DBD-mysql-4.052.tar.gz \
+  DBD::Pg \
+  Socket \
+  Socket6 \
+  PerlIO::gzip \
+  ; do cpan install $i; done \
   && apk del mariadb-dev expat-dev openssl-dev perl-dev g++ cmake make musl-obstack-dev libpq-dev
 
 HEALTHCHECK --interval=1m --timeout=3s CMD curl --silent --fail http://127.0.0.1:80/fpm-ping
