@@ -41,7 +41,9 @@ else
 fi
 
 if [[ -v NO_NGINX_V6 ]]; then
+    nginx -s stop
     sed -i -e "s/listen \[::\]:80 default_server;/# listen [::]:80 default_server;/g" /etc/nginx/nginx.conf
+    nginx
 fi
 
 # Start supervisord and services
