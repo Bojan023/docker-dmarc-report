@@ -34,6 +34,7 @@ RUN set -e -x \
   perl-dev \
   perl-utils \
   perl-net-ssleay \
+  perl-io-socket-ssl \
   php81-pdo \
   php81-pdo_mysql \
   php81-pdo_pgsql \
