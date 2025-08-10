@@ -44,7 +44,7 @@ RUN set -e -x \
   && unzip parser.zip && cp -av dmarcts-report-parser-master/* /usr/bin/ && rm -vf parser.zip && rm -rvf dmarcts-report-parser-master \
   && unzip viewer.zip && cp -av dmarcts-report-viewer-master/* /var/www/viewer/ && rm -vf viewer.zip && rm -rvf dmarcts-report-viewer-master \
   && sed -i "1s/^/body { font-family: Sans-Serif; }\n/" /var/www/viewer/default.css \
-  && sed -i 's%^\s*listen \[::\]:8080 default_server;%    listen [::]:80 default_server;%g' /etc/nginx/nginx.conf \
+  && sed -i 's%^\s*listen \[::\]:8080 default_server;%        listen [::]:80 default_server;%g' /etc/nginx/nginx.conf \
   && sed -i 's%.*listen 8080 default_server;%        listen 80 default_server;%g' /etc/nginx/nginx.conf \
   && sed -i 's%.*root /var/www/html;%        root /var/www/viewer;%g' /etc/nginx/nginx.conf \
   && sed -i 's/.*index index.php index.html;/        index dmarcts-report-viewer.php;/g' /etc/nginx/nginx.conf \
