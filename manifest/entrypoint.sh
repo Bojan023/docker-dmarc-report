@@ -40,7 +40,7 @@ else
   exit 1
 fi
 
-if [[ -v NO_NGINX_V6 ]]; then
+if [[ -v NO_NGINX_IPV6 ]]; then
     nginx -s stop
     sed -i 's/^\([[:space:]]*\)listen \[::\]:80 default_server;/\1#listen [::]:80 default_server;/g' /etc/nginx/nginx.conf
     nginx
