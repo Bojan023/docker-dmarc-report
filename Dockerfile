@@ -33,6 +33,7 @@ RUN set -e -x \
   openssl-dev \
   perl-dev \
   perl-utils \
+  perl-net-ssleay \
   php81-pdo \
   php81-pdo_mysql \
   php81-pdo_pgsql \
