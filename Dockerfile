@@ -21,6 +21,7 @@ RUN set -e -x \
     musl-obstack-dev \
     openssl \
     perl \
+    perl-file-mimeinfo \
     perl-utils \
     perl-io \
     perl-io-socket-ssl \
@@ -52,7 +53,6 @@ RUN set -e -x \
   && apk add perl-dev make g++ \
   && (echo y; echo o conf prerequisites_policy follow; echo o conf commit) | cpan \
   && for i in \
-    File::MimeInfo \
     IO::Compress::Gzip \
     MIME::Words \
     DVEEDEN/DBD-mysql-4.052.tar.gz \
