@@ -43,6 +43,7 @@ RUN set -e -x \
     php81-pdo \
     php81-pdo_mysql \
     php81-pdo_pgsql \
+    shared-mime-info \
     tzdata \
     wget \
     unzip \
