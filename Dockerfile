@@ -11,9 +11,9 @@ WORKDIR /
 COPY ./manifest/ /
 
 # Ensure Alpine community feed is available
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/3.18/main" > /etc/apk/repositories \
- && echo "https://dl-cdn.alpinelinux.org/alpine/3.18/community" >> /etc/apk/repositories \
- && echo "https://dl-cdn.alpinelinux.org/alpine/3.18/testing" >> /etc/apk/repositories
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/3.22/main" > /etc/apk/repositories \
+ && echo "https://dl-cdn.alpinelinux.org/alpine/3.22/community" >> /etc/apk/repositories \
+ && echo "https://dl-cdn.alpinelinux.org/alpine/3.22/testing" >> /etc/apk/repositories
 
 RUN set -e -x \
   && apk add -U \
