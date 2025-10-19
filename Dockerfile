@@ -54,7 +54,6 @@ RUN set -e -x \
     File::MimeInfo \
     IO::Compress::Gzip \
     MIME::Words \
-    PerlIO::gzip \
     DVEEDEN/DBD-mysql-4.052.tar.gz \
   ; do cpan install $i; done \
   && apk del perl-dev make g++
