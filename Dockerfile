@@ -1,3 +1,15 @@
+ARG UPSTREAM_IMAGE=trafex/php-nginx:2.6.0
+FROM $UPSTREAM_IMAGE
+LABEL maintainer="Robert Schumann <rs@n-os.org>"
+
+ENV REPORT_PARSER_SOURCE="https://github.com/techsneeze/dmarcts-report-parser/archive/master.zip" \
+    REPORT_VIEWER_SOURCE="https://github.com/techsneeze/dmarcts-report-viewer/archive/master.zip"
+
+USER root
+WORKDIR /
+
+COPY ./manifest/ /
+
 RUN set -e -x \
   && apk add -U \
     bash \
@@ -45,3 +57,9 @@ RUN set -e -x \
   ; do cpan install $i; done \
   && apk del perl-dev make g++
 ``
+
+HEALTHCHECK --interval=1m --timeout=3s CMD curl --silent --fail http://127.0.0.1:80/fpm-ping
+
+EXPOSE 80
+
+CMD ["/bin/bash", "/entrypoint.sh"]
