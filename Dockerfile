@@ -19,6 +19,7 @@ RUN set -e -x \
   && apk add -U \
     bash \
     expat \
+    glib=2.74.0-r0 \
     libpq \
     mariadb-client \
     mariadb-dev \
