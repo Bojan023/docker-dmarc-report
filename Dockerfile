@@ -18,6 +18,7 @@ RUN set -e -x \
     mariadb-client \
     mariadb-dev \
     musl-obstack \
+    musl-obstack-dev \
     openssl \
     perl \
     perl-utils \
