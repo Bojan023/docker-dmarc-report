@@ -56,7 +56,6 @@ RUN set -e -x \
     DVEEDEN/DBD-mysql-4.052.tar.gz \
   ; do cpan install $i; done \
   && apk del perl-dev make g++
-``
 
 HEALTHCHECK --interval=1m --timeout=3s CMD curl --silent --fail http://127.0.0.1:80/fpm-ping
 
