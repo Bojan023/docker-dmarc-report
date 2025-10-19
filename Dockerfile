@@ -19,7 +19,7 @@ RUN set -e -x \
   && apk add -U \
     bash \
     expat \
-    glib=2.74.0-r0 \
+    glib \
     libpq \
     mariadb-client \
     mariadb-dev \
@@ -43,7 +43,7 @@ RUN set -e -x \
     php81-pdo \
     php81-pdo_mysql \
     php81-pdo_pgsql \
-    shared-mime-info=2.4-r6 \
+    shared-mime-info \
     tzdata \
     wget \
     unzip \
