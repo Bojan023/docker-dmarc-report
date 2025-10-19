@@ -1,15 +1,3 @@
-ARG UPSTREAM_IMAGE=trafex/php-nginx:2.6.0
-FROM $UPSTREAM_IMAGE
-LABEL maintainer="Robert Schumann <rs@n-os.org>"
-
-ENV REPORT_PARSER_SOURCE="https://github.com/techsneeze/dmarcts-report-parser/archive/master.zip" \
-    REPORT_VIEWER_SOURCE="https://github.com/techsneeze/dmarcts-report-viewer/archive/master.zip"
-
-USER root
-WORKDIR /
-
-COPY ./manifest/ /
-
 RUN set -e -x \
   && apk add -U \
     bash \
@@ -26,16 +14,10 @@ RUN set -e -x \
     perl-mime-tools \
     perl-xml-parser \
     perl-xml-simple \
-    perl-db-dev \
     perl-dbd-pg \
     perl-socket \
     perl-socket6 \
-    perl-io-compress \
     perl-getopt-long \
-    perl-file-mimeinfo \
-    perl-mime-base64 \
-    perl-mime-words \
-    perl-perlio-gzip \
     php81-pdo \
     php81-pdo_mysql \
     php81-pdo_pgsql \
@@ -51,10 +33,15 @@ RUN set -e -x \
   && sed -i 's%.*listen 8080 default_server;%        listen 80 default_server;%g' /etc/nginx/nginx.conf \
   && sed -i 's%.*root /var/www/html;%        root /var/www/viewer;%g' /etc/nginx/nginx.conf \
   && sed -i 's/.*index index.php index.html;/        index dmarcts-report-viewer.php;/g' /etc/nginx/nginx.conf \
-  && sed -i 's%files = /etc/supervisor.d/\*.ini%files = /etc/supervisor/conf.d/*.conf%g' /etc/supervisord.conf
-
-HEALTHCHECK --interval=1m --timeout=3s CMD curl --silent --fail http://127.0.0.1:80/fpm-ping
-
-EXPOSE 80
-
-CMD ["/bin/bash", "/entrypoint.sh"]
+  && sed -i 's%files = /etc/supervisor.d/\*.ini%files = /etc/supervisor/conf.d/*.conf%g' /etc/supervisord.conf \
+  && apk add perl-dev make g++ \
+  && (echo y; echo o conf prerequisites_policy follow; echo o conf commit) | cpan \
+  && for i in \
+    File::MimeInfo \
+    IO::Compress::Gzip \
+    MIME::Words \
+    PerlIO::gzip \
+    DVEEDEN/DBD-mysql-4.052.tar.gz \
+  ; do cpan install $i; done \
+  && apk del perl-dev make g++
+``
