@@ -76,7 +76,7 @@ RUN set -e -x \
   Socket6 \
   PerlIO::gzip \
   ; do cpan install $i; done \
-  && apk del mariadb-dev expat-dev openssl-dev perl-dev g++ cmake make musl-obstack-dev libpq-dev
+  && apk del mariadb-dev openssl-dev perl-dev g++ cmake make musl-obstack-dev libpq-dev
 
 HEALTHCHECK --interval=1m --timeout=3s CMD curl --silent --fail http://127.0.0.1:80/fpm-ping
 
