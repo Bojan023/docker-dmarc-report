@@ -16,10 +16,12 @@ RUN set -e -x \
     expat \
     libpq \
     mariadb-client \
+    mariadb-dev \
     musl-obstack \
     openssl \
     perl \
     perl-utils \
+    perl-io \
     perl-io-socket-ssl \
     perl-net-ssleay \
     perl-mail-imapclient \
@@ -35,7 +37,7 @@ RUN set -e -x \
     php81-pdo_pgsql \
     tzdata \
     wget \
-    unzip \
+    unzip
   && wget -4 -q --no-check-certificate -O parser.zip $REPORT_PARSER_SOURCE \
   && wget -4 -q --no-check-certificate -O viewer.zip $REPORT_VIEWER_SOURCE \
   && unzip parser.zip && cp -av dmarcts-report-parser-master/* /usr/bin/ && rm -vf parser.zip && rm -rvf dmarcts-report-parser-master \
