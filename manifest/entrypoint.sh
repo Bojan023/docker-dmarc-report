@@ -82,6 +82,13 @@ if [[ -n "${NO_NGINX_IPV6:-}" ]]; then
 fi
 
 ###############################################################################
+# Fix nginx index for DMARC viewer
+###############################################################################
+sed -i \
+  's|index .*;|index dmarcts-report-viewer.php index.php index.html;|' \
+  /etc/nginx/nginx.conf
+
+###############################################################################
 # Start supervisor
 ###############################################################################
 exec /usr/bin/supervisord -n -c /etc/supervisord.conf
