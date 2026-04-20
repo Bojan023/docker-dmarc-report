@@ -133,9 +133,9 @@ stderr_logfile=/dev/stderr
 EOF
 
 HEALTHCHECK --interval=1m --timeout=3s \
-  CMD curl --silent --fail http://127.0.0.1:80/fpm-ping
+  CMD curl --silent --fail http://127.0.0.1:8080/fpm-ping
 
-EXPOSE 80
+EXPOSE 8080
 
 # IMPORTANT: keep TrafeX entrypoint
 CMD ["/bin/bash", "/entrypoint.sh"]
