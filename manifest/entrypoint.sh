@@ -2,13 +2,12 @@
 set -e
 
 ###############################################################################
-# Auto-detect installed PHP version (php81, php82, php83, …)
+# Auto-detect installed PHP version
 ###############################################################################
 PHP_VERSION="$(basename /etc/php*)"
 PHP_INI="/etc/${PHP_VERSION}/php.ini"
 PHP_CONF_DIR="/etc/${PHP_VERSION}/conf.d"
 PHP_FPM_DIR="/etc/${PHP_VERSION}/php-fpm.d"
-PHP_FPM_POOL="${PHP_FPM_DIR}/www.conf"
 
 ###############################################################################
 # Configure PHP error display
@@ -27,65 +26,53 @@ if [[ -n "${NO_OPCACHE:-}" ]]; then
 fi
 
 ###############################################################################
-# Tune nginx workers to CPU cores
+# Tune nginx workers
 ###############################################################################
 procs=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || echo 1)
 sed -i "s|worker_processes .*;|worker_processes ${procs};|" \
   /etc/nginx/nginx.conf
 
 ###############################################################################
-# Ensure PHP-FPM pool exists and has REQUIRED user/group
-# (php-fpm WILL NOT start without this)
+# PHP-FPM pool user override
 ###############################################################################
 mkdir -p "$PHP_FPM_DIR"
 
-if [[ ! -f "$PHP_FPM_POOL" ]]; then
-  echo "[www]" > "$PHP_FPM_POOL"
-fi
-
-# Force user/group, regardless of existing content
-sed -i \
-  -e 's|^user =.*|user = nginx|' \
-  -e 's|^group =.*|group = www-data|' \
-  -e 's|^;user =.*|user = nginx|' \
-  -e 's|^;group =.*|group = www-data|' \
-  "$PHP_FPM_POOL" || true
-
-# Safety net: append if still missing
-grep -q '^user = nginx' "$PHP_FPM_POOL" || echo 'user = nginx' >> "$PHP_FPM_POOL"
-grep -q '^group = www-data' "$PHP_FPM_POOL" || echo 'group = www-data' >> "$PHP_FPM_POOL"
+cat > "${PHP_FPM_DIR}/zz-user.conf" <<'EOF'
+[www]
+user = nginx
+group = www-data
+clear_env = no
+EOF
 
 ###############################################################################
-# PHP-FPM environment variables for application
+# PHP-FPM environment variables
 ###############################################################################
-PHP_ENV_FILE="${PHP_FPM_DIR}/env.conf"
-{
-  echo "[www]"
-  echo "clear_env = no"
-} > "$PHP_ENV_FILE"
+cat > "${PHP_FPM_DIR}/env.conf" <<'EOF'
+[www]
+clear_env = no
+EOF
 
 env | grep -E \
   'REPORT_DB_TYPE|REPORT_DB_HOST|REPORT_DB_PORT|REPORT_DB_NAME|REPORT_DB_USER|REPORT_DB_PASS' \
-  | sed "s|\(.*\)=\(.*\)|env[\1] = '\2'|" >> "$PHP_ENV_FILE"
+  | sed "s|\(.*\)=\(.*\)|env[\1] = '\2'|" >> "${PHP_FPM_DIR}/env.conf"
 
-# Backward compatibility
-grep -q '^env\[REPORT_DB_PORT\]' "$PHP_ENV_FILE" \
-  || echo "env[REPORT_DB_PORT] = 3306" >> "$PHP_ENV_FILE"
+grep -q '^env\[REPORT_DB_PORT\]' "${PHP_FPM_DIR}/env.conf" \
+  || echo "env[REPORT_DB_PORT] = 3306" >> "${PHP_FPM_DIR}/env.conf"
 
 ###############################################################################
-# Initial DMARC parse (fail fast if broken)
+# Initial DMARC parse
 ###############################################################################
 if /usr/bin/dmarcts-report-parser.pl -i -d -r \
   > /var/log/nginx/dmarc-reports.log 2>&1; then
   echo "INFO: DMARC reports parsed successfully"
 else
-  echo "CRIT: DMARC reports could not be parsed"
+  echo "CRIT: DMARC parsing failed"
   cat /var/log/nginx/dmarc-reports.log
   exit 1
 fi
 
 ###############################################################################
-# Disable nginx IPv6 listeners EVERYWHERE (critical)
+# Disable nginx IPv6 listeners globally
 ###############################################################################
 if [[ -n "${NO_NGINX_IPV6:-}" ]]; then
   echo "[entrypoint] NO_NGINX_IPV6 is set — disabling nginx IPv6 listeners"
@@ -95,6 +82,6 @@ if [[ -n "${NO_NGINX_IPV6:-}" ]]; then
 fi
 
 ###############################################################################
-# Start supervisor (which starts nginx, php-fpm, cron)
+# Start supervisor
 ###############################################################################
 exec /usr/bin/supervisord -n -c /etc/supervisord.conf
