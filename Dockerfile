@@ -1,4 +1,4 @@
-ARG UPSTREAM_IMAGE=trafex/php-nginx:3.9
+ARG UPSTREAM_IMAGE=trafex/php-nginx:3.9.0
 FROM ${UPSTREAM_IMAGE}
 
 LABEL maintainer="Robert Schumann <rs@n-os.org>"
