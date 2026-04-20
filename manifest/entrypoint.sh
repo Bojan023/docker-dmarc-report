@@ -84,13 +84,18 @@ fi
 ###############################################################################
 # Fix nginx root and index for DMARC viewer
 ###############################################################################
-# Set correct document root and index
+# Set correct root and index
 sed -i \
   -e 's|root\s\+/var/www/html;|root /var/www/viewer;|' \
   -e 's|index\s\+.*;|index dmarcts-report-viewer.php index.php index.html;|' \
   /etc/nginx/conf.d/default.conf
 
-# Ensure fastcgi_index is valid (ONLY index.php is allowed)
+# Fix try_files so "/" routes to the viewer PHP file
+sed -i \
+  -e 's|try_files .*;|try_files $uri $uri/ /dmarcts-report-viewer.php?$query_string;|' \
+  /etc/nginx/conf.d/default.conf
+
+# Ensure fastcgi_index is valid
 sed -i \
   -e 's|fastcgi_index\s\+.*;|fastcgi_index index.php;|' \
   /etc/nginx/conf.d/default.conf
