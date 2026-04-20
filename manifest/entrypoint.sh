@@ -2,7 +2,7 @@
 set -e
 
 ###############################################################################
-# Auto-detect installed PHP version (php81, php82, …)
+# Auto-detect installed PHP version (php81, php82, php83, …)
 ###############################################################################
 PHP_VERSION="$(basename /etc/php*)"
 PHP_INI="/etc/${PHP_VERSION}/php.ini"
@@ -32,8 +32,9 @@ procs=$(grep -c ^processor /proc/cpuinfo)
 sed -i -e "s/worker_processes .*/worker_processes $procs;/" /etc/nginx/nginx.conf
 
 ###############################################################################
-# Copy important env vars for PHP-FPM
+# Prepare PHP-FPM env configuration (FIXED)
 ###############################################################################
+mkdir -p "$PHP_FPM_DIR"
 PHP_ENV_FILE="${PHP_FPM_DIR}/${PHP_ENV_FILE:-env.conf}"
 
 {
