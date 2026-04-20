@@ -60,9 +60,9 @@ RUN set -eux \
         perl-xml-parser \
         perl-xml-simple \
         perl-app-cpanminus \
-        php-pdo \
-        php-pdo_mysql \
-        php-pdo_pgsql \
+        php84-pdo \
+        php84-pdo_mysql \
+        php84-pdo_pgsql \
         tzdata \
         wget \
         unzip \
