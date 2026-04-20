@@ -12,7 +12,22 @@ USER root
 WORKDIR /
 
 # Bring in entrypoint.sh and other manifests
-COPY ./manifest/ /
+# Entrypoint
+COPY manifest/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# DMARC cron job
+COPY manifest/etc/cron.d/dmarc /etc/cron.d/dmarc
+RUN chmod 0644 /etc/cron.d/dmarc
+
+# DMARC parser configuration
+COPY manifest/usr/bin/dmarcts-report-parser.conf /usr/bin/dmarcts-report-parser.conf
+RUN chmod 0644 /usr/bin/dmarcts-report-parser.conf
+
+# DMARC report viewer configuration
+COPY manifest/var/www/viewer/dmarcts-report-viewer-config.php \
+     /var/www/viewer/dmarcts-report-viewer-config.php
+RUN chmod 0644 /var/www/viewer/dmarcts-report-viewer-config.php
 
 RUN set -eux \
     && apk update \
