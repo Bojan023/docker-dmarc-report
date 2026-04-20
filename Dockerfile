@@ -121,6 +121,17 @@ RUN set -eux; \
     "s|^command=.*php-fpm.*|command=${PHP_FPM_BIN} -F -R|" \
     /etc/supervisor/conf.d/supervisord.conf
 
+# Enable cron via Supervisor
+RUN cat > /etc/supervisor/conf.d/cron.conf <<'EOF'
+[program:cron]
+command=/usr/sbin/crond -f -l 8
+autostart=true
+autorestart=true
+priority=10
+stdout_logfile=/dev/stdout
+stderr_logfile=/dev/stderr
+EOF
+
 HEALTHCHECK --interval=1m --timeout=3s \
   CMD curl --silent --fail http://127.0.0.1:80/fpm-ping
 
