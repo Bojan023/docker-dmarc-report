@@ -45,6 +45,23 @@ clear_env = no
 EOF
 
 ###############################################################################
+# Fix PHP-FPM socket permissions so nginx can connect
+###############################################################################
+PHP_FPM_POOL="$(ls /etc/php*/php-fpm.d/www.conf | head -n1)"
+
+sed -i \
+  -e 's|^listen = .*|listen = /run/php-fpm.sock|' \
+  -e 's|^;\\?listen.owner =.*|listen.owner = nginx|' \
+  -e 's|^;\\?listen.group =.*|listen.group = nginx|' \
+  -e 's|^;\\?listen.mode =.*|listen.mode = 0660|' \
+  "$PHP_FPM_POOL"
+
+# Ensure entries exist even if upstream file lacks them
+grep -q '^listen.owner' "$PHP_FPM_POOL" || echo 'listen.owner = nginx' >> "$PHP_FPM_POOL"
+grep -q '^listen.group' "$PHP_FPM_POOL" || echo 'listen.group = nginx' >> "$PHP_FPM_POOL"
+grep -q '^listen.mode'  "$PHP_FPM_POOL" || echo 'listen.mode = 0660'  >> "$PHP_FPM_POOL"
+
+###############################################################################
 # PHP-FPM environment variables
 ###############################################################################
 cat > "${PHP_FPM_DIR}/env.conf" <<'EOF'
@@ -103,10 +120,7 @@ sed -i \
 ###############################################################################
 # Replace TrafeX default nginx server with DMARC viewer front-controller
 ###############################################################################
-# Detect PHP-FPM socket dynamically (confirmed path)
-PHP_FPM_SOCK="$(grep -R 'listen =' /etc/php*/php-fpm.d/www.conf | sed 's/.*listen = //')"
-
-# Detect PHP-FPM socket path from config (do NOT check existence)
+# Detect PHP-FPM socket dynamically
 PHP_FPM_SOCK="$(grep -R 'listen =' /etc/php*/php-fpm.d/www.conf | sed 's/.*listen = //')"
 
 # Define nginx DMARC server
