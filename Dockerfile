@@ -114,10 +114,12 @@ RUN set -eux \
         libpq-dev \
     && rm -rf /root/.cpan /root/.cpanm /tmp/*
 
-# Allow php-fpm to run as root (TrafeX layout)
-RUN sed -i \
-  's|^\(command=.*php-fpm\)\(.*\)$|\1 -R\2|' \
-  /etc/supervisor/conf.d/supervisord.conf
+# Fix php-fpm command for TrafeX (use versioned binary + allow root)
+RUN set -eux; \
+  PHP_FPM_BIN="$(ls /usr/sbin/php-fpm* | head -n 1)"; \
+  sed -i \
+    "s|^command=.*php-fpm.*|command=${PHP_FPM_BIN} -F -R|" \
+    /etc/supervisor/conf.d/supervisord.conf
 
 HEALTHCHECK --interval=1m --timeout=3s \
   CMD curl --silent --fail http://127.0.0.1:80/fpm-ping
