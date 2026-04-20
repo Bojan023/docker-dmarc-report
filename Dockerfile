@@ -1,4 +1,4 @@
-ARG UPSTREAM_IMAGE=trafex/php-nginx:2.6.0
+ARG UPSTREAM_IMAGE=trafex/php-nginx:3.9
 
 FROM $UPSTREAM_IMAGE
 
