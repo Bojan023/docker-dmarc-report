@@ -101,6 +101,34 @@ sed -i \
   /etc/nginx/conf.d/default.conf
 
 ###############################################################################
+# Replace TrafeX default nginx server with DMARC viewer front-controller
+###############################################################################
+cat > /etc/nginx/conf.d/dmarc.conf <<'EOF'
+server {
+    listen 8080;
+    server_name _;
+
+    root /var/www/viewer;
+    index dmarcts-report-viewer.php index.php index.html;
+
+    location / {
+        try_files $uri $uri/ /dmarcts-report-viewer.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        try_files $uri =404;
+        fastcgi_pass   127.0.0.1:9000;
+        fastcgi_index  index.php;
+        include        fastcgi_params;
+        fastcgi_param  SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    }
+}
+EOF
+
+# Disable TrafeX default server
+rm -f /etc/nginx/conf.d/default.conf
+
+###############################################################################
 # Start supervisor
 ###############################################################################
 exec /usr/bin/supervisord -n -c /etc/supervisord.conf
