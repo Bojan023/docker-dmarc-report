@@ -11,6 +11,7 @@ ENV REPORT_PARSER_SOURCE="https://github.com/techsneeze/dmarcts-report-parser/ar
 USER root
 WORKDIR /
 
+# Bring in entrypoint.sh and other manifests
 COPY ./manifest/ /
 
 RUN set -eux \
@@ -47,6 +48,7 @@ RUN set -eux \
         wget \
         unzip \
     \
+    # --- Fetch DMARC tools ---
     && wget -4 -q --no-check-certificate -O parser.zip "${REPORT_PARSER_SOURCE}" \
     && wget -4 -q --no-check-certificate -O viewer.zip "${REPORT_VIEWER_SOURCE}" \
     \
@@ -59,22 +61,7 @@ RUN set -eux \
     && cp -av dmarcts-report-viewer-master/* /var/www/viewer/ \
     && rm -rf viewer.zip dmarcts-report-viewer-master \
     \
-    # --- nginx: disable IPv6 entirely (prevents socket() [::] crash) ---
-    && sed -i '/listen \[::\]/d' /etc/nginx/nginx.conf \
-    && sed -i 's|.*listen 8080 default_server;|        listen 80 default_server;|g' /etc/nginx/nginx.conf \
-    && sed -i 's|.*root /var/www/html;|        root /var/www/viewer;|g' /etc/nginx/nginx.conf \
-    && sed -i 's|.*index index.php index.html;|        index dmarcts-report-viewer.php;|g' /etc/nginx/nginx.conf \
-    \
-    # --- php-fpm: restore required user/group ---
-    && sed -i \
-        -e 's/^;*user = .*/user = nobody/' \
-        -e 's/^;*group = .*/group = nobody/' \
-        /etc/php*/php-fpm.d/www.conf \
-    \
-    # --- supervisor config location fix ---
-    && sed -i 's|files = /etc/supervisor.d/\*.ini|files = /etc/supervisor/conf.d/*.conf|g' /etc/supervisord.conf \
-    \
-    # --- CPAN installs (fast, no tests, parallel build) ---
+    # --- CPAN installs (fast: cpanm, no tests, parallel make) ---
     && cpanm --notest \
         IO::Socket::SSL \
         CPAN::DistnameInfo \
@@ -96,7 +83,7 @@ RUN set -eux \
         Socket6 \
         PerlIO::gzip \
     \
-    # --- cleanup build-only deps ---
+    # --- Cleanup build-only deps ---
     && apk del \
         mariadb-dev \
         openssl-dev \
@@ -106,11 +93,12 @@ RUN set -eux \
         make \
         musl-obstack-dev \
         libpq-dev \
-    && rm -rf /root/.cpanm /root/.cpan /tmp/*
+    && rm -rf /root/.cpan /root/.cpanm /tmp/*
 
 HEALTHCHECK --interval=1m --timeout=3s \
   CMD curl --silent --fail http://127.0.0.1:80/fpm-ping
 
 EXPOSE 80
 
+# IMPORTANT: keep TrafeX entrypoint
 CMD ["/bin/bash", "/entrypoint.sh"]
