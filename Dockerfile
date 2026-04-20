@@ -17,8 +17,8 @@ COPY manifest/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # DMARC cron job
-COPY manifest/etc/cron.d/dmarc /etc/cron.d/dmarc
-RUN chmod 0644 /etc/cron.d/dmarc
+COPY manifest/etc/cron.d/root /etc/cron.d/root
+RUN chmod 0644 /etc/cron.d/root
 
 # DMARC parser configuration
 COPY manifest/usr/bin/dmarcts-report-parser.conf /usr/bin/dmarcts-report-parser.conf
