@@ -72,7 +72,7 @@ fi
 if [[ -n "${NO_NGINX_IPV6:-}" ]]; then
   echo "[entrypoint] NO_NGINX_IPV6 is set — disabling nginx IPv6 listeners"
   sed -i \
-    -e 's/^[[:space:]]*\(listen[[:space:]]\+\[::\]:[0-9]\+[[:space:]]\+default_server;\)/# \1/' \
+    -e 's/^[[:space:]]*listen[[:space:]]\+\[::\]:[0-9]\+[[:space:]]\+default_server;/# &/' \
     /etc/nginx/nginx.conf
 fi
 
