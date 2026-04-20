@@ -59,13 +59,22 @@ RUN set -eux \
     && cp -av dmarcts-report-viewer-master/* /var/www/viewer/ \
     && rm -rf viewer.zip dmarcts-report-viewer-master \
     \
-    && sed -i '1s|^|body { font-family: Sans-Serif; }\n|' /var/www/viewer/default.css \
-    && sed -i 's|^\s*listen \[::\]:8080 default_server;|        listen [::]:80 default_server;|g' /etc/nginx/nginx.conf \
+    # --- nginx: disable IPv6 entirely (prevents socket() [::] crash) ---
+    && sed -i '/listen \[::\]/d' /etc/nginx/nginx.conf \
     && sed -i 's|.*listen 8080 default_server;|        listen 80 default_server;|g' /etc/nginx/nginx.conf \
     && sed -i 's|.*root /var/www/html;|        root /var/www/viewer;|g' /etc/nginx/nginx.conf \
     && sed -i 's|.*index index.php index.html;|        index dmarcts-report-viewer.php;|g' /etc/nginx/nginx.conf \
+    \
+    # --- php-fpm: restore required user/group ---
+    && sed -i \
+        -e 's/^;*user = .*/user = nobody/' \
+        -e 's/^;*group = .*/group = nobody/' \
+        /etc/php*/php-fpm.d/www.conf \
+    \
+    # --- supervisor config location fix ---
     && sed -i 's|files = /etc/supervisor.d/\*.ini|files = /etc/supervisor/conf.d/*.conf|g' /etc/supervisord.conf \
     \
+    # --- CPAN installs (fast, no tests, parallel build) ---
     && cpanm --notest \
         IO::Socket::SSL \
         CPAN::DistnameInfo \
@@ -87,6 +96,7 @@ RUN set -eux \
         Socket6 \
         PerlIO::gzip \
     \
+    # --- cleanup build-only deps ---
     && apk del \
         mariadb-dev \
         openssl-dev \
