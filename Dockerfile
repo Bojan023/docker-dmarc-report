@@ -1,10 +1,12 @@
-ARG UPSTREAM_IMAGE=trafex/php-nginx:3.9.0
+ARG UPSTREAM_IMAGE=trafex/php-nginx:3.9
 FROM ${UPSTREAM_IMAGE}
 
 LABEL maintainer="Robert Schumann <rs@n-os.org>"
 
 ENV REPORT_PARSER_SOURCE="https://github.com/techsneeze/dmarcts-report-parser/archive/master.zip" \
-    REPORT_VIEWER_SOURCE="https://github.com/techsneeze/dmarcts-report-viewer/archive/master.zip"
+    REPORT_VIEWER_SOURCE="https://github.com/techsneeze/dmarcts-report-viewer/archive/master.zip" \
+    PERL_MM_USE_DEFAULT=1 \
+    MAKEFLAGS="-j$(nproc)"
 
 USER root
 WORKDIR /
@@ -37,6 +39,7 @@ RUN set -eux \
         perl-io-socket-ssl \
         perl-xml-parser \
         perl-xml-simple \
+        perl-app-cpanminus \
         php-pdo \
         php-pdo_mysql \
         php-pdo_pgsql \
@@ -63,16 +66,8 @@ RUN set -eux \
     && sed -i 's|.*index index.php index.html;|        index dmarcts-report-viewer.php;|g' /etc/nginx/nginx.conf \
     && sed -i 's|files = /etc/supervisor.d/\*.ini|files = /etc/supervisor/conf.d/*.conf|g' /etc/supervisord.conf \
     \
-    && ( \
-        echo y ; \
-        echo o conf allow_installing_outdated_dists yes ; \
-        echo o conf prerequisites_policy follow ; \
-        echo o conf commit \
-       ) | cpan \
-    \
-    && for i in \
+    && cpanm --notest \
         IO::Socket::SSL \
-        CPAN \
         CPAN::DistnameInfo \
         File::MimeInfo \
         IO::Compress::Gzip \
@@ -91,7 +86,6 @@ RUN set -eux \
         Socket \
         Socket6 \
         PerlIO::gzip \
-      ; do cpan install "$i"; done \
     \
     && apk del \
         mariadb-dev \
@@ -102,7 +96,7 @@ RUN set -eux \
         make \
         musl-obstack-dev \
         libpq-dev \
-    && rm -rf /root/.cpan /tmp/*
+    && rm -rf /root/.cpanm /root/.cpan /tmp/*
 
 HEALTHCHECK --interval=1m --timeout=3s \
   CMD curl --silent --fail http://127.0.0.1:80/fpm-ping
