@@ -106,11 +106,10 @@ sed -i \
 # Detect PHP-FPM socket dynamically (confirmed path)
 PHP_FPM_SOCK="$(grep -R 'listen =' /etc/php*/php-fpm.d/www.conf | sed 's/.*listen = //')"
 
-if [ ! -S "$PHP_FPM_SOCK" ]; then
-  echo "ERROR: PHP-FPM socket not found at $PHP_FPM_SOCK"
-  exit 1
-fi
+# Detect PHP-FPM socket path from config (do NOT check existence)
+PHP_FPM_SOCK="$(grep -R 'listen =' /etc/php*/php-fpm.d/www.conf | sed 's/.*listen = //')"
 
+# Define nginx DMARC server
 cat > /etc/nginx/conf.d/dmarc.conf <<EOF
 server {
     listen 8080;
