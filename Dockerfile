@@ -29,6 +29,10 @@ COPY manifest/var/www/viewer/dmarcts-report-viewer-config.php \
      /var/www/viewer/dmarcts-report-viewer-config.php
 RUN chmod 0644 /var/www/viewer/dmarcts-report-viewer-config.php
 
+RUN sed -i \
+  -e 's|files = /etc/supervisor.d/\*.ini|files = /etc/supervisor/conf.d/*.conf|' \
+  /etc/supervisord.conf
+
 RUN set -eux \
     && apk update \
     && apk add --no-cache \
