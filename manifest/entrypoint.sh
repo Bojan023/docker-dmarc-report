@@ -103,7 +103,15 @@ sed -i \
 ###############################################################################
 # Replace TrafeX default nginx server with DMARC viewer front-controller
 ###############################################################################
-cat > /etc/nginx/conf.d/dmarc.conf <<'EOF'
+# Detect PHP-FPM socket dynamically (confirmed path)
+PHP_FPM_SOCK="$(grep -R 'listen =' /etc/php*/php-fpm.d/www.conf | sed 's/.*listen = //')"
+
+if [ ! -S "$PHP_FPM_SOCK" ]; then
+  echo "ERROR: PHP-FPM socket not found at $PHP_FPM_SOCK"
+  exit 1
+fi
+
+cat > /etc/nginx/conf.d/dmarc.conf <<EOF
 server {
     listen 8080;
     server_name _;
@@ -112,20 +120,20 @@ server {
     index dmarcts-report-viewer.php index.php index.html;
 
     location / {
-        try_files $uri $uri/ /dmarcts-report-viewer.php?$query_string;
+        try_files \$uri \$uri/ /dmarcts-report-viewer.php?\$query_string;
     }
 
-    location ~ \.php$ {
-        try_files $uri =404;
+    location ~ \.php\$ {
+        try_files \$uri =404;
         include fastcgi_params;
         fastcgi_index index.php;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        fastcgi_pass unix:/run/php/php-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        fastcgi_pass unix:${PHP_FPM_SOCK};
     }
 }
 EOF
 
-# Disable TrafeX default server
+# Disable the default TrafeX server
 rm -f /etc/nginx/conf.d/default.conf
 
 ###############################################################################
